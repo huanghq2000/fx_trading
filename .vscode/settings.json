@@ -63,5 +63,12 @@
         "editor.formatOnSave": false
     },
 
-    "files.encoding": "utf8"
+    "files.encoding": "utf8",
+
+    "// ========================================": "",
+    "// 禁用 C/C++ IntelliSense — 避免以 C++ 规则误报 MQL4 语法": "",
+    "// .mq4 被 MQL Tools 注册为 cpp 模式，触发 C++ 引擎": "",
+    "// MQL Tools 自带 MQL4 语法检查，不需要 C++ IntelliSense": "",
+    "// ========================================": "",
+    "C_Cpp.intelliSenseEngine": "disabled"
 }
