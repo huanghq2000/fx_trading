@@ -1,0 +1,59 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "MQL4: 编译当前文件 (MetaEditor)",
+            "type": "shell",
+            "command": "\"C:/Program Files (x86)/Swissquote Bank MT4 Client Terminal/metaeditor.exe\"",
+            "args": [
+                "/compile:\"${file}\"",
+                "/log"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": [
+                {
+                    "owner": "mql4",
+                    "fileLocation": ["relative", "${workspaceFolder}"],
+                    "pattern": {
+                        "regexp": "^(.+?)\\((\\d+),(\\d+)\\)\\s*:\\s*(warning|error)\\s+(\\d+):\\s*(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "column": 3,
+                        "severity": 4,
+                        "code": 5,
+                        "message": 6
+                    }
+                }
+            ]
+        },
+        {
+            "label": "MQL4: 在 MetaEditor 中打开",
+            "type": "shell",
+            "command": "\"C:/Program Files (x86)/Swissquote Bank MT4 Client Terminal/metaeditor.exe\"",
+            "args": [
+                "\"${file}\""
+            ],
+            "presentation": {
+                "reveal": "never"
+            }
+        },
+        {
+            "label": "MQL4: 打开 MT4 交易终端",
+            "type": "shell",
+            "command": "\"C:/Program Files (x86)/Swissquote Bank MT4 Client Terminal/terminal.exe\"",
+            "args": [],
+            "presentation": {
+                "reveal": "never"
+            }
+        }
+    ]
+}

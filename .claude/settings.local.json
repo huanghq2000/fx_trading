@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find \"C:/Program Files\" \"C:/Program Files \\(x86\\)\" -maxdepth 2 -name \"terminal.exe\" 2>/dev/null | head -10)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/黄河清/AppData/Roaming/MetaQuotes/Terminal/20C4A5F7E7ABCF8D168695229FF0F39B/config/**)",
+      "Bash(ls -la \"C:/Program Files \\(x86\\)/Swissquote Bank MT4 Client Terminal/\" | head -30)",
+      "Read(//c/Program Files \\(x86\\)/Swissquote Bank MT4 Client Terminal/**)",
+      "Bash(code --list-extensions --show-versions)"
+    ]
+  }
+}

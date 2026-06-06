@@ -1,0 +1,67 @@
+{
+    "// ========================================": "",
+    "// MQL Tools — MetaEditor 编译器路径": "",
+    "// ========================================": "",
+    "mql_tools.Metaeditor.Metaeditor4Dir": "C:/Program Files (x86)/Swissquote Bank MT4 Client Terminal",
+
+    "// ========================================": "",
+    "// MQL Tools — 编译与检查": "",
+    "// ========================================": "",
+    "mql_tools.Compilation.Optimization": "Maximum Optimization",
+    "mql_tools.Compilation.Strict": "disabled",
+    "mql_tools.IntelliSenseErrorSquiggles": false,
+    "mql_tools.IntelliSenseUpdateDelay": 1000,
+
+    "// ========================================": "",
+    "// MQL Tools — 复制编译产物到 MT4 目录": "",
+    "// ========================================": "",
+    "mql_tools.CopyFiles": true,
+
+    "// ========================================": "",
+    "// MQL Tools — 帮助系统 (F1 查 MQL4 文档)": "",
+    "// ========================================": "",
+    "mql_tools.Help.HelpON": true,
+    "mql_tools.Help.MQL4HelpLanguage": "English",
+
+    "// ========================================": "",
+    "// MQL Tools — 编辑器标题栏按钮": "",
+    "// ========================================": "",
+    "mql_tools.ShowButton.Compile": true,
+    "mql_tools.ShowButton.Check": true,
+    "mql_tools.ShowButton.Script": true,
+    "mql_tools.ShowButton.Menu": true,
+
+    "// ========================================": "",
+    "// MQL Tools — 脚本模式 (Mini MetaEditor)": "",
+    "// ========================================": "",
+    "mql_tools.Script.MiniME": true,
+    "mql_tools.Script.CloseME": true,
+    "mql_tools.Script.Timetomini": 500,
+
+    "// ========================================": "",
+    "// MQL Tools — 日志": "",
+    "// ========================================": "",
+    "mql_tools.LogFile.DeleteLog": true,
+
+    "// ========================================": "",
+    "// MQL Tools — 代码着色": "",
+    "// ========================================": "",
+    "mql_tools.Color": "enabled",
+
+    "// ========================================": "",
+    "// QuantWorker MQL Format — 格式化": "",
+    "// ========================================": "",
+    "quantworker-mql-format.forceCppMode": true,
+    "quantworker-mql-format.useBundledClangFormat": true,
+
+    "// ========================================": "",
+    "// 编辑器样式 (MQL Tools 将 .mq4 注册为 C++ 模式)": "",
+    "// ========================================": "",
+    "[cpp]": {
+        "editor.tabSize": 3,
+        "editor.insertSpaces": true,
+        "editor.formatOnSave": false
+    },
+
+    "files.encoding": "utf8"
+}
