@@ -30,11 +30,11 @@ enum ENUM_MA_METHOD
 //+------------------------------------------------------------------+
 //| 输入参数 - 通用设置                                                |
 //+------------------------------------------------------------------+
-input double   Lots            = 0.1;          // 固定手数
+input double   Lots            = 0.2;          // 固定手数
 input double   RiskPercent     = 2.0;          // 风险百分比（0=使用固定手数）
-input double   TakeProfit      = 100;          // 止盈（点数）
-input double   InitialStopLoss = 80;           // 止损（点数）
-input double   TrailingStop    = 40;           // 移动止损距离（点数）
+input double   TakeProfit      = 200;          // 止盈（点数）
+input double   InitialStopLoss = 60;           // 止损（点数）
+input double   TrailingStop    = 80;           // 移动止损距离（点数）
 input double   MaxSpread       = 30;           // 最大允许点差
 input int      MagicNumber     = 20250101;     // 魔术号
 input ENUM_SIGNAL_MODE SignalMode = MAJORITY_VOTE; // 信号确认模式
@@ -83,6 +83,15 @@ input int      StochDPeriod    = 3;            // D 线周期
 input int      StochSlowing    = 3;            // 慢速线
 input int      StochOversold   = 20;           // 随机指标超卖水平
 input int      StochOverbought = 80;           // 随机指标超买水平
+
+//+------------------------------------------------------------------+
+//| 输入参数 - 信号灵敏度系数（<1.0=收紧条件  >1.0=放宽条件）           |
+//+------------------------------------------------------------------+
+input double   BB_Sensitivity   = 1.0;         // BB 灵敏度（影响带宽范围）
+input double   MA_Sensitivity   = 1.0;         // MA 灵敏度（影响交叉确认距离）
+input double   MACD_Sensitivity = 1.0;         // MACD 灵敏度（影响开仓幅度要求）
+input double   RSI_Sensitivity  = 1.0;         // RSI 灵敏度（影响超买超卖区间宽度）
+input double   Stoch_Sensitivity = 1.0;        // Stoch 灵敏度（影响超买超卖区间宽度）
 
 //+------------------------------------------------------------------+
 //| 全局变量                                                           |
@@ -207,14 +216,18 @@ int GetBBSignal()
   {
    if(!UseBB) return(0);
 
-   double bbUpper = iBands(NULL, 0, BBPeriod, BBDeviation, BBShift, PRICE_CLOSE, MODE_UPPER, 1);
-   double bbLower = iBands(NULL, 0, BBPeriod, BBDeviation, BBShift, PRICE_CLOSE, MODE_LOWER, 1);
+   //--- effective deviation scaled by sensitivity; >1 widens bands, <1 narrows
+   double effDev = BBDeviation * BB_Sensitivity;
+
+   double bbUpper = iBands(NULL, 0, BBPeriod, effDev, BBShift, PRICE_CLOSE, MODE_UPPER, 1);
+   double bbLower = iBands(NULL, 0, BBPeriod, effDev, BBShift, PRICE_CLOSE, MODE_LOWER, 1);
 
    if(bbUpper == 0 || bbLower == 0) return(0);
 
    double closePrev = Close[1];
    double lowPrev   = Low[1];
    double highPrev  = High[1];
+   double bandwidth = bbUpper - bbLower;
 
 //--- 买入: 价格触及或跌破下轨
    if(BBRequireTouch)
@@ -224,7 +237,7 @@ int GetBBSignal()
      }
    else
      {
-      if(closePrev <= bbLower + (bbUpper - bbLower) * 0.05)
+      if(closePrev <= bbLower + bandwidth * 0.05)
          return(1);
      }
 
@@ -236,7 +249,7 @@ int GetBBSignal()
      }
    else
      {
-      if(closePrev >= bbUpper - (bbUpper - bbLower) * 0.05)
+      if(closePrev >= bbUpper - bandwidth * 0.05)
          return(-1);
      }
 
@@ -258,18 +271,22 @@ int GetMASignal()
 
    if(maSlow == 0) return(0);
 
-//--- 金叉（买入信号）
-   if(maFast > maSlow && maFast0 > maSlow0)
+   //--- sensitivity: required percentage gap = baseGap / MA_Sensitivity
+   double baseGap = maSlow * 0.001;  // 0.1% of price
+   double requiredGap = baseGap / MathMax(MA_Sensitivity, 0.01);
+
+//--- 金叉（买入信号）：快线在慢线上方且超过要求间距
+   if(maFast > maSlow + requiredGap && maFast0 > maSlow0)
       return(1);
 
-//--- 死叉（卖出信号）
-   if(maFast < maSlow && maFast0 < maSlow0)
+//--- 死叉（卖出信号）：快线在慢线下方且超过要求间距
+   if(maFast < maSlow - requiredGap && maFast0 < maSlow0)
       return(-1);
 
-//--- 价格相对于 MA 的位置作为辅助判断
-   if(Close[1] > maSlow)
+//--- 价格相对于 MA 的位置作为辅助判断，也受灵敏度影响
+   if(Close[1] > maSlow + requiredGap)
       return(1);
-   if(Close[1] < maSlow)
+   if(Close[1] < maSlow - requiredGap)
       return(-1);
 
    return(0);
@@ -288,17 +305,20 @@ int GetMACDSignal()
    double signalCurr  = iMACD(NULL, 0, MACDFastEMA, MACDSlowEMA, MACDSignalSMA, PRICE_CLOSE, MODE_SIGNAL, 0);
    double signalPrev  = iMACD(NULL, 0, MACDFastEMA, MACDSlowEMA, MACDSignalSMA, PRICE_CLOSE, MODE_SIGNAL, 1);
 
+   //--- sensitivity: >1 lowers the threshold (easier), <1 raises it (harder)
+   double effLevel = MACDOpenLevel / MathMax(MACD_Sensitivity, 0.01);
+
 //--- 金叉（零轴下方更可靠）
    if(macdCurr > signalCurr && macdPrev <= signalPrev)
      {
-      if(MathAbs(macdCurr) > MACDOpenLevel * Point)
+      if(MathAbs(macdCurr) > effLevel * Point)
          return(1);
      }
 
 //--- 死叉（零轴上方更可靠）
    if(macdCurr < signalCurr && macdPrev >= signalPrev)
      {
-      if(MathAbs(macdCurr) > MACDOpenLevel * Point)
+      if(MathAbs(macdCurr) > effLevel * Point)
          return(-1);
      }
 
@@ -322,16 +342,20 @@ int GetRSISignal()
    double rsiCurr = iRSI(NULL, 0, RSIPeriod, PRICE_CLOSE, 0);
    double rsiPrev = iRSI(NULL, 0, RSIPeriod, PRICE_CLOSE, 1);
 
+   //--- sensitivity: >1 moves thresholds toward 50 (easier), <1 pushes them outward (harder)
+   double effOversold   = 50 - (50 - RSIOversold)   / MathMax(RSI_Sensitivity, 0.01);
+   double effOverbought = 50 + (RSIOverbought - 50) / MathMax(RSI_Sensitivity, 0.01);
+
 //--- 超卖区域反弹（买入）
-   if(rsiPrev < RSIOversold && rsiCurr > RSIOversold)
+   if(rsiPrev < effOversold && rsiCurr > effOversold)
       return(1);
-   if(rsiPrev < RSIOversold && rsiCurr > rsiPrev)
+   if(rsiPrev < effOversold && rsiCurr > rsiPrev)
       return(1);
 
 //--- 超买区域回落（卖出）
-   if(rsiPrev > RSIOverbought && rsiCurr < RSIOverbought)
+   if(rsiPrev > effOverbought && rsiCurr < effOverbought)
       return(-1);
-   if(rsiPrev > RSIOverbought && rsiCurr < rsiPrev)
+   if(rsiPrev > effOverbought && rsiCurr < rsiPrev)
       return(-1);
 
    return(0);
@@ -350,24 +374,28 @@ int GetStochSignal()
    double stochDCurr = iStochastic(NULL, 0, StochKPeriod, StochDPeriod, StochSlowing, MODE_SMA, 0, MODE_SIGNAL, 0);
    double stochDPrev = iStochastic(NULL, 0, StochKPeriod, StochDPeriod, StochSlowing, MODE_SMA, 0, MODE_SIGNAL, 1);
 
+   //--- sensitivity: >1 moves thresholds toward 50 (easier), <1 pushes them outward (harder)
+   double effOversold   = 50 - (50 - StochOversold)   / MathMax(Stoch_Sensitivity, 0.01);
+   double effOverbought = 50 + (StochOverbought - 50) / MathMax(Stoch_Sensitivity, 0.01);
+
 //--- 超卖区域 K 上穿 D（买入）
    if(stochKCurr > stochDCurr && stochKPrev <= stochDPrev)
      {
-      if(stochKPrev < StochOversold || stochDPrev < StochOversold)
+      if(stochKPrev < effOversold || stochDPrev < effOversold)
          return(1);
      }
 
 //--- 超买区域 K 下穿 D（卖出）
    if(stochKCurr < stochDCurr && stochKPrev >= stochDPrev)
      {
-      if(stochKPrev > StochOverbought || stochDPrev > StochOverbought)
+      if(stochKPrev > effOverbought || stochDPrev > effOverbought)
          return(-1);
      }
 
 //--- 辅助：远离极端区域的方向
-   if(stochKCurr < StochOversold && stochKCurr > stochKPrev)
+   if(stochKCurr < effOversold && stochKCurr > stochKPrev)
       return(1);
-   if(stochKCurr > StochOverbought && stochKCurr < stochKPrev)
+   if(stochKCurr > effOverbought && stochKCurr < stochKPrev)
       return(-1);
 
    return(0);
