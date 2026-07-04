@@ -87,11 +87,11 @@ input int      StochOverbought = 80;           // 随机指标超买水平
 //+------------------------------------------------------------------+
 //| 输入参数 - 信号灵敏度系数（<1.0=收紧条件  >1.0=放宽条件）           |
 //+------------------------------------------------------------------+
-input double   BB_Sensitivity   = 1.0;         // BB 灵敏度（影响带宽范围）
-input double   MA_Sensitivity   = 1.0;         // MA 灵敏度（影响交叉确认距离）
-input double   MACD_Sensitivity = 1.0;         // MACD 灵敏度（影响开仓幅度要求）
-input double   RSI_Sensitivity  = 1.0;         // RSI 灵敏度（影响超买超卖区间宽度）
-input double   Stoch_Sensitivity = 1.0;        // Stoch 灵敏度（影响超买超卖区间宽度）
+input double   BB_Sensitivity   = 2.0;         // BB 灵敏度（影响带宽范围）
+input double   MA_Sensitivity   = 2.0;         // MA 灵敏度（影响交叉确认距离）
+input double   MACD_Sensitivity = 2.0;         // MACD 灵敏度（影响开仓幅度要求）
+input double   RSI_Sensitivity  = 1.5;         // RSI 灵敏度（影响超买超卖区间宽度）
+input double   Stoch_Sensitivity = 2.0;        // Stoch 灵敏度（影响超买超卖区间宽度）
 
 //+------------------------------------------------------------------+
 //| 全局变量                                                           |
